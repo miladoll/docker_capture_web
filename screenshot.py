@@ -22,6 +22,7 @@ def args_parser():
     parser.add_argument('url', help='specify URL')
     parser.add_argument('filename', help='specify capture image filename')
     parser.add_argument('-w', help="specify window size like 1200x800", dest="window_size", type=str)
+    parser.add_argument('--crop', help="specify cropping size like 800x600", dest="crop_size", type=str)
     parser.add_argument('--ua', help="specify user-agent", dest="user_agent", type=str)
     parser.add_argument('--wait', help="specify wait seconds after scroll", dest="wait", type=float, default=0.2)
     parser.add_argument('-v', help="set LogLevel to INFO", dest="log_info", action="store_true")
@@ -37,6 +38,10 @@ def main():
     else:
         window_size = (1200, 800)
 
+    crop_size = (0, 0)
+    if args.crop_size:
+        crop_size = [int(x) for x in args.crop_size.split("x")]
+
     if args.log_info:
         log_level = INFO
     elif args.log_debug:
@@ -46,10 +51,10 @@ def main():
     basicConfig(level=log_level, format='%(asctime)s@%(name)s %(levelname)s # %(message)s')
 
     capture_full_screenshot(args.url, args.filename, window_size=window_size, user_agent=args.user_agent,
-                            wait=args.wait)
+                            wait=args.wait, crop_size=crop_size)
 
 
-def capture_full_screenshot(url, filename, window_size=None, user_agent=None, wait=None):
+def capture_full_screenshot(url, filename, window_size=None, user_agent=None, wait=None, crop_size=None):
     """
 
     :param url:
@@ -57,6 +62,7 @@ def capture_full_screenshot(url, filename, window_size=None, user_agent=None, wa
     :param None|tuple window_size: browser window size. tuple of (width, height)
     :param None|str user_agent:
     :param None|float wait:
+    :param None|tuple crop_size: cropping size. tuple of (width, height)
     :return:
     """
     options = webdriver.ChromeOptions()
@@ -76,11 +82,11 @@ def capture_full_screenshot(url, filename, window_size=None, user_agent=None, wa
 
     ua = driver.execute_script("return navigator.userAgent")
     logger.info((client_info, ua))
-    capture_screen_area(driver, filename, client_info, wait=wait)
+    capture_screen_area(driver, filename, client_info, wait=wait, crop_size=crop_size)
     driver.close()
 
 
-def capture_screen_area(driver: webdriver.Chrome, filename, client_info: ClientInfo, wait):
+def capture_screen_area(driver: webdriver.Chrome, filename, client_info: ClientInfo, wait, crop_size):
     for y_pos in range(0, client_info.full_height - client_info.window_height, 300):
         scroll_to(driver, 0, y_pos)
         sleep(wait or 0.2)
@@ -106,6 +112,10 @@ def capture_screen_area(driver: webdriver.Chrome, filename, client_info: ClientI
             resized_image.close()
             x_pos += x_delta
         y_pos -= y_delta
+
+    if crop_size:
+        canvas = canvas.crop( ( 0, 0, crop_size[0], crop_size[1] ) )
+
     canvas.save(filename)
 
 

@@ -55,6 +55,7 @@ positional arguments:
 optional arguments:
   -h, --help       show this help message and exit
   -w WINDOW_SIZE   specify window size like 1200x800
+  --crop CROP_SIZE specify cropping size like 800x600
   --ua USER_AGENT  specify user-agent
   --wait WAIT      specify wait seconds after scroll
   -v               set LogLevel to INFO
@@ -67,3 +68,10 @@ How To Build
 ```bash
 ./build
 ```
+
+ChangeLog
+=========
+
+* 2021/01/30 ミラドール丁稚
+    * `--crop` オプションを追加
+    * `capture` スクリプトの `docker run` に `--rm` オプションを追加
